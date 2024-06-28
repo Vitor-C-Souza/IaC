@@ -10,13 +10,14 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-west-2"
+  profile = "default"
+  region  = var.regiao_aws
 }
 
 resource "aws_instance" "app_server" {
   ami           = "ami-0cf2b4e024cdb6960"
-  instance_type = "t2.micro"
-  key_name = "curso"
+  instance_type = var.instacia
+  key_name = var.chave
   # user_data = <<-EOF
   #               #!/bin/bash
   #               cd /home/ubuntu
@@ -25,6 +26,16 @@ resource "aws_instance" "app_server" {
   #               EOF
 
   tags = {
-    Name = "Terraform Ansible Python"
+    Name = var.nome
   }
+  security_groups = [ aws_security_group.acesso_geral.name ]
+}
+
+resource "aws_key_pair" "chaveSSH" {
+  key_name = var.chave
+  public_key = file("${var.chave}.pub")
+}
+
+output "IP_public" {
+  value = aws_instance.app_server.public_ip   
 }
